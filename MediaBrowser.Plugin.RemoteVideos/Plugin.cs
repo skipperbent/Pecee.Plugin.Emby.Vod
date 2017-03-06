@@ -46,7 +46,7 @@ namespace Pecee.Emby.Plugin.Vod
 				UserId = playlistConf.UserId, 
 				Name = playlistConf.Name, 
 				PlaylistUrl = playlistConf.Url, 
-				CollectionType = playlistConf.CollectionType,
+				//CollectionType = playlistConf.CollectionType,
 				IdentifierId = playlistConf.IdentifierId
 			}).ToList();
 		}
