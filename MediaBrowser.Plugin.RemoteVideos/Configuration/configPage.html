@@ -107,7 +107,27 @@
                         }
                     });
                 },
+                triggerSync: function () {
 
+	                ApiClient.getScheduledTasks().then(function(response) {
+
+		                var taskId = null;
+
+		                for (var i = 0; i < response.length; i++) {
+							if (response[i].Key == 'VodPlaylistLibrarySync') {
+								taskId = response[i].Id;
+								break;
+							}
+						}
+
+						if (taskId != null) {
+							console.log('Starting task id ' + taskId);
+							ApiClient.startScheduledTask(taskId);
+						}
+
+	                });
+
+                },
                 addPlaylistPopup: function (page) {
                 	$('#name', page).val("").focus();
                 	$('#streamPopup', page).popup('open');
@@ -172,6 +192,7 @@
 
                 	VodConfigurationPage.save();
                 	VodConfigurationPage.populatePlaylists(page);
+                	VodConfigurationPage.triggerSync();
                 });
 
             }).on('pageshow', function (event) {

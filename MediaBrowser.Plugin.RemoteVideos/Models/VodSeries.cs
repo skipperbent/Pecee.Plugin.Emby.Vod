@@ -1,10 +1,11 @@
 ﻿using System;
 using MediaBrowser.Controller.Entities.TV;
 
-namespace MediaBrowser.Plugin.VOD.Models
+namespace Pecee.Emby.Plugin.Vod.Models
 {
-	public class VodSeries : Series
+	public class VodSeries : Series, IVodMedia
 	{
-		public String IdentifierId { get; set; }
+		public Guid IdentifierId { get; set; }
+
 	}
 }

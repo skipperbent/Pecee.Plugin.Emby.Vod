@@ -1,0 +1,7 @@
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\Pecee.Emby.Plugin.Vod.dll
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\Pecee.Emby.Plugin.Vod.pdb
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Common.dll
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Controller.dll
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Model.dll
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\obj\Debug\Pecee.Emby.Plugin.Vod.dll
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\obj\Debug\Pecee.Emby.Plugin.Vod.pdb

@@ -8,8 +8,8 @@
     <ProjectGuid>{8554F77D-F923-4596-B0C3-0225560F000D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MediaBrowser.Plugin.VOD</RootNamespace>
-    <AssemblyName>MediaBrowser.Plugin.VOD</AssemblyName>
+    <RootNamespace>Pecee.Emby.Plugin.Vod</RootNamespace>
+    <AssemblyName>Pecee.Emby.Plugin.Vod</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -34,7 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Api\PlaylistEndpoint.cs" />
+    <Compile Include="Api\PlaylistsEndpoint.cs" />
+    <Compile Include="Models\IVodMedia.cs" />
     <Compile Include="Models\VodMusicVideo.cs" />
     <Compile Include="Models\VodSeries.cs" />
     <Compile Include="Models\VodMovie.cs" />
@@ -42,13 +43,26 @@
     <Compile Include="Folder\ChannelFolder.cs" />
     <Compile Include="Folder\ChannelFolderType.cs" />
     <Compile Include="Entities\Media.cs" />
-    <Compile Include="Entities\Playlist.cs" />
+    <Compile Include="Entities\PlaylistConfig.cs" />
     <Compile Include="Parser\M3UParser.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Configuration\PluginConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Channel.cs" />
-    <Compile Include="Scheduler\SyncPlaylist.cs" />
+    <Compile Include="Scheduler\PlaylistLibrarySync.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\configPage.html" />
+    <EmbeddedResource Include="Images\backdrop.png" />
+    <EmbeddedResource Include="Images\thumb.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\movies.png" />
+    <EmbeddedResource Include="Images\music.png" />
+    <EmbeddedResource Include="Images\tv.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\primary.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MediaBrowser.Common, Version=3.2.1.111, Culture=neutral, processorArchitecture=MSIL">
@@ -66,19 +80,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Configuration\configPage.html" />
-    <EmbeddedResource Include="Images\backdrop.png" />
-    <EmbeddedResource Include="Images\thumb.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Images\movies.png" />
-    <EmbeddedResource Include="Images\music.png" />
-    <EmbeddedResource Include="Images\tv.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Images\primary.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <PropertyGroup>

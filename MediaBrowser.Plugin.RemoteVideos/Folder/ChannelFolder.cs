@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace MediaBrowser.Plugin.VOD.Folder
+namespace Pecee.Emby.Plugin.Vod.Folder
 {
 	class ChannelFolder
 	{

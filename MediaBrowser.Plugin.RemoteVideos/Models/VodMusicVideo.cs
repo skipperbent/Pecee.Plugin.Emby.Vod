@@ -1,10 +1,11 @@
 ﻿using System;
 using MediaBrowser.Controller.Entities;
 
-namespace MediaBrowser.Plugin.VOD.Models
+namespace Pecee.Emby.Plugin.Vod.Models
 {
-	public class VodMusicVideo : MusicVideo
+	public class VodMusicVideo : MusicVideo, IVodMedia
 	{
-		public String IdentifierId { get; set; }
+		public Guid IdentifierId { get; set; }
+
 	}
 }

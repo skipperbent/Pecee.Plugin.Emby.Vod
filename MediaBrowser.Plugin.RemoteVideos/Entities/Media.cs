@@ -1,7 +1,7 @@
 ﻿using System;
 using MediaBrowser.Common.Extensions;
 
-namespace MediaBrowser.Plugin.VOD.Entities
+namespace Pecee.Emby.Plugin.Vod.Entities
 {
 	public class Media
 	{

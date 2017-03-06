@@ -1,16 +1,15 @@
 ﻿using System.Resources;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MediaBrowser.Plugin.VOD")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Emby VideoOnDemand (VOD) Plugin")]
+[assembly: AssemblyDescription("Emby Plugin adding video on demand features to your local Emby library")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("MediaBrowser.Plugin.VOD")]
+[assembly: AssemblyCompany("Pecee")]
+[assembly: AssemblyProduct("")]
 [assembly: AssemblyCopyright("Copyright ©  2017 Pecee")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

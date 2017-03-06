@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Plugin.VOD.Configuration;
-using MediaBrowser.Plugin.VOD.Entities;
-using MediaBrowser.Plugin.VOD.Folder;
-using ChannelFolderType = MediaBrowser.Plugin.VOD.Folder.ChannelFolderType;
+using Pecee.Emby.Plugin.Vod.Configuration;
+using Pecee.Emby.Plugin.Vod.Folder;
+using Pecee.Emby.Plugin.Vod.Models;
+using Pecee.Emby.Plugin.Vod.Parser;
+using ChannelFolderType = Pecee.Emby.Plugin.Vod.Folder.ChannelFolderType;
 
-namespace MediaBrowser.Plugin.VOD
+namespace Pecee.Emby.Plugin.Vod
 {
 	public class Channel : IChannel, IIndexableChannel
 	{
@@ -32,17 +32,15 @@ namespace MediaBrowser.Plugin.VOD
 
 		public ChannelParentalRating ParentalRating => ChannelParentalRating.GeneralAudience;
 
-		private readonly ILogManager _logManager;
 		private readonly ILogger _logger;
 		private readonly IProviderManager _providerManager;
-		private readonly IHttpClient _httpClient;
+		private readonly M3UParser _m3UParser;
 
-		public Channel(ILogManager logManager, IProviderManager providerManager, IHttpClient httpClient)
+		public Channel(ILogManager logManager, IProviderManager providerManager, M3UParser m3UParser)
 		{
-			_logManager = logManager;
 			_logger = logManager.GetLogger(PluginConfiguration.Name);
 			_providerManager = providerManager;
-			_httpClient = httpClient;
+			_m3UParser = m3UParser;
 		}
 
 		public InternalChannelFeatures GetChannelFeatures()
@@ -78,7 +76,8 @@ namespace MediaBrowser.Plugin.VOD
 
 		public bool IsEnabledFor(string userId)
 		{
-			return true;
+			// TODO: change channel disabled
+			return Plugin.Instance.Configuration.ChannelEnabled;
 		}
 
 		public Task<DynamicImageResponse> GetChannelImage(ImageType type, CancellationToken cancellationToken)
@@ -113,7 +112,7 @@ namespace MediaBrowser.Plugin.VOD
 			{	
 				var item = new ChannelItemInfo()
 				{
-					Id = ChannelFolder.GetUrl(ChannelFolderType.Playlist, playlist.Identifier),
+					Id = ChannelFolder.GetUrl(ChannelFolderType.Playlist, playlist.IdentifierId.ToString()),
 					Type = ChannelItemType.Folder,
 					Name = playlist.Name,
 					ImageUrl = Plugin.GetImage("movies").Path,
@@ -139,7 +138,7 @@ namespace MediaBrowser.Plugin.VOD
 			{
 				case ChannelFolderType.Playlist:
 				{
-					var playlist = Plugin.Instance.Configuration.Playlists.FirstOrDefault(p => p.Identifier == folder.Id);
+					var playlist = Plugin.Instance.GetPlaylists().FirstOrDefault(p => p.IdentifierId.ToString() == folder.Id);
 					if (playlist != null)
 					{
 						return await GetPlaylistItems(playlist, cancellationToken).ConfigureAwait(false);
@@ -151,29 +150,25 @@ namespace MediaBrowser.Plugin.VOD
 			return GetChannelPlaylists(query);
 		}
 
-		public async Task<ChannelItemResult> GetPlaylistItems(Playlist playlist, CancellationToken cancellationToken)
+		public async Task<ChannelItemResult> GetPlaylistItems(VodPlaylist playlist, CancellationToken cancellationToken)
 		{
-			await playlist.RefreshMedia(_logManager, _httpClient, cancellationToken).ConfigureAwait(false);
+			List<VodMovie> mediaItems = await _m3UParser.GetMediaItems(playlist, cancellationToken).ConfigureAwait(false);
 
 			var items = new List<ChannelItemInfo>();
 
-			foreach (var media in playlist.Media)
+			foreach (var media in mediaItems)
 			{
+				var image = media.GetImages(ImageType.Primary).FirstOrDefault();
+
 				var info = new ChannelItemInfo()
 				{
-					Id = media.Identifier,
+					Id = media.IdentifierId.ToString(),
 					Name = media.Name,
-					ImageUrl = media.Image,
+					ImageUrl = image?.Path,
 					Type = ChannelItemType.Media,
 					MediaType = ChannelMediaType.Video,
 					ContentType = ChannelMediaContentType.Movie,
-					MediaSources = new List<ChannelMediaInfo>
-					{
-						new ChannelMediaInfo
-						{
-							Path = media.Url
-						}
-					}
+					MediaSources = media.ChannelMediaSources,
 				};
 
 				var meta = await _providerManager.GetRemoteSearchResults<Movie, MovieInfo>(new RemoteSearchQuery<MovieInfo>
@@ -211,7 +206,7 @@ namespace MediaBrowser.Plugin.VOD
 
 		public async Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
 		{
-			var playlists = Plugin.Instance.Configuration.Playlists;
+			var playlists = Plugin.Instance.GetPlaylists();
 
 			var items = new List<ChannelItemInfo>();
 

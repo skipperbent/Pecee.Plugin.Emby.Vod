@@ -4,13 +4,17 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Extensions;
 using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Channels;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using MediaBrowser.Plugin.VOD.Configuration;
-using MediaBrowser.Plugin.VOD.Entities;
+using MediaBrowser.Model.MediaInfo;
+using Pecee.Emby.Plugin.Vod.Configuration;
+using Pecee.Emby.Plugin.Vod.Models;
 
-namespace MediaBrowser.Plugin.VOD.Parser
+namespace Pecee.Emby.Plugin.Vod.Parser
 {
 	public class M3UParser
 	{
@@ -32,6 +36,7 @@ namespace MediaBrowser.Plugin.VOD.Parser
 			var attributeMatches = _regexPattern.Matches(line);
 			if (attributeMatches.Count == 0)
 			{
+				_logger.Debug("No attributes found", attributeMatches.Count);
 				return attributes;
 			}
 
@@ -59,11 +64,13 @@ namespace MediaBrowser.Plugin.VOD.Parser
 			return attributes;
 		}
 
-		public async Task<List<Media>> GetMediaItems(string playlistUrl, CancellationToken cancellationToken)
+		public async Task<List<VodMovie>> GetMediaItems(VodPlaylist playlist, CancellationToken cancellationToken)
 		{
-			var items = new List<Media>();
+			var items = new List<VodMovie>();
 
-			using (Stream stream = await _httpClient.Get(playlistUrl, CancellationToken.None).ConfigureAwait(false))
+			_logger.Debug("{0}: Starting to parse: {1}", playlist.Name, playlist.PlaylistUrl);
+
+			using (Stream stream = await _httpClient.Get(playlist.PlaylistUrl.ToString(), CancellationToken.None).ConfigureAwait(false))
 			{
 				using (var reader = new StreamReader(stream))
 				{
@@ -73,6 +80,7 @@ namespace MediaBrowser.Plugin.VOD.Parser
 
 						if (line.IndexOf("#EXTINF", StringComparison.CurrentCulture) != 0)
 						{
+							_logger.Debug("{0}: Non-valid line, skipping", playlist.Name);
 							continue;
 						}
 
@@ -98,12 +106,36 @@ namespace MediaBrowser.Plugin.VOD.Parser
 						var imageUrl = (imgUri != null) ? imgUri.ToString() : null;
 						_logger.Debug("Adding: {0}, stream playlistUrl: {0}, image: {0}", attributes["tvg-name"], streamUrl, imageUrl);
 
-						var media = new Media
+						var media = new VodMovie()
 						{
-							Url = streamUrl.ToString(),
-							Name = attributes["tvg-name"],
-							Image = imageUrl,
+							Name = attributes["tvg-name"].Trim(),
+							OriginalTitle = attributes["tvg-name"].Trim(),
+							Path = streamUrl.ToString(),
+							DefaultVideoStreamIndex = -1,
+							ParentId = playlist.Id,
+							IdentifierId = streamUrl.ToString().GetMD5(),
 						};
+
+						media.ChannelMediaSources = new List<ChannelMediaInfo>
+						{
+							new ChannelMediaInfo
+							{
+								Path = streamUrl.ToString(),
+								Protocol = MediaProtocol.Http,
+							}
+						};
+
+						if (imageUrl != null)
+						{
+							media.ImageInfos = new List<ItemImageInfo>()
+							{
+								new ItemImageInfo()
+								{
+									Path = imageUrl,
+									Type = ImageType.Primary,
+								}
+							};
+						}
 
 						items.Add(media);
 					}

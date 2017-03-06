@@ -2,14 +2,14 @@
 using System.Linq;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
-using MediaBrowser.Plugin.VOD.Configuration;
-using MediaBrowser.Plugin.VOD.Entities;
+using Pecee.Emby.Plugin.Vod.Configuration;
+using Pecee.Emby.Plugin.Vod.Entities;
 
-namespace MediaBrowser.Plugin.VOD.Api
+namespace Pecee.Emby.Plugin.Vod.Api
 {
 	[Route("/vod/playlists", "POST", Summary = "Add new playlist")]
 	[Authenticated]
-	public class PlaylistSend : IReturnVoid
+	public class PlaylistRequest : IReturnVoid
 	{
 		[ApiMember(Name = "Name", Description = "Name", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
 		public string Name { get; set; }
@@ -26,18 +26,18 @@ namespace MediaBrowser.Plugin.VOD.Api
 
 	[Route("/vod/collectiontypes", "GET", Summary = "Get supported collection-types")]
 	[Authenticated]
-	public class CollectionTypesSend : IReturn<string[]>
+	public class CollectionRequest : IReturn<string[]>
 	{
 	}
 
-	class PlaylistEndpoint : IService
+	class PlaylistsEndpoint : IService
 	{
-		public object Get(CollectionTypesSend request)
+		public object Get(CollectionRequest request)
 		{
 			return PluginConfiguration.AllowedCollectionTypes;
 		}
 
-		public void Post(PlaylistSend request)
+		public void Post(PlaylistRequest request)
 		{
 			if (string.IsNullOrWhiteSpace(request.Name))
 			{
@@ -61,7 +61,7 @@ namespace MediaBrowser.Plugin.VOD.Api
 
 			var list = Plugin.Instance.Configuration.Playlists.ToList();
 
-			list.Add(new Playlist()
+			list.Add(new PlaylistConfig()
 			{
 				UserId = request.UserId,
 				Name = request.Name,

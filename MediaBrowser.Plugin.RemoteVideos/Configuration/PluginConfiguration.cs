@@ -1,14 +1,11 @@
-﻿
-using System.Xml.Serialization;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Plugins;
-using MediaBrowser.Plugin.VOD.Entities;
+using Pecee.Emby.Plugin.Vod.Entities;
 
-namespace MediaBrowser.Plugin.VOD.Configuration
+namespace Pecee.Emby.Plugin.Vod.Configuration
 {
 	public class PluginConfiguration : BasePluginConfiguration
 	{
-		[XmlIgnore]
 		public static string[] AllowedCollectionTypes = new string[]
 		{
 			CollectionType.Movies,
@@ -29,14 +26,14 @@ namespace MediaBrowser.Plugin.VOD.Configuration
 
 		public static string PluginId = "7A54F58C-F05E-4BFB-AD64-7E92FAEB0DA2";
 
-		public Playlist[] Playlists { get; set; }
+		public bool ChannelEnabled { get; set; }
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="PluginConfiguration" /> class.
-		/// </summary>
+		public PlaylistConfig[] Playlists { get; set; }
+
 		public PluginConfiguration()
 		{
-			Playlists = new Playlist[] { };
+			Playlists = new PlaylistConfig[] { };
+			ChannelEnabled = true;
 		}
 	}
 	

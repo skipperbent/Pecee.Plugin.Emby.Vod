@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
-namespace MediaBrowser.Plugin.VOD.Folder
+﻿namespace Pecee.Emby.Plugin.Vod.Folder
 {
 	internal enum ChannelFolderType
 	{
