@@ -1,0 +1,205 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>VOD Plugin Configuration</title>
+</head>
+<body>
+	<div id="vodConfigurationPage" data-role="page" class="page type-interior vodConfigurationPage" data-require="emby-button,listViewStyle,paper-icon-button-light">
+		<div data-role="content">
+			<div class="content-primary">
+				<div id="vodConfigurationForm" class="readOnlyContent">
+					<div style="display: flex; align-items: center;margin: 1em 0;">
+						<h1 style="margin:0;">Video on Demand</h1>
+						<button is="emby-button" type="button" class="raised btnAdd submit mini" style="margin-left:1em;" title="Add">
+							<i class="md-icon">add</i>
+							<span>Add</span>
+						</button>
+					</div>
+					<div class="streamList paperList js-playlists">
+					</div>
+				</div>
+			
+				<div data-role="popup" id="streamPopup"  data-dismissible="false">
+					<div class="ui-bar-a" style="text-align: center; padding: 0 20px;">
+						<h3>New Playlist</h3>
+					</div>
+					<div data-role="content">
+						<form id="streamForm" style="min-width: 220px;">
+							<div>
+								<label for="name">Name:</label>
+								<input id="name" type="text" data-mini="true" required />
+							</div>
+							<br />
+							<div>
+								<label for="collectionType">Collection type:</label>
+								<select id="collectionType" data-mini="true">
+								</select>
+							</div>
+							<div>
+								<label for="url">Url:</label>
+								<input id="url" type="url" data-mini="true" required />
+							</div>
+							<br />
+							<button type="submit" data-theme="b" data-mini="true">Add</button>
+							<button type="button" data-theme="c" onclick="$('#streamPopup').popup('close')" data-mini="true">Cancel</button>
+						</form>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<script type="text/javascript">
+
+			var VodConfigurationPage = {
+            	pluginUniqueId: "7A54F58C-F05E-4BFB-AD64-7E92FAEB0DA2",
+
+                populatePlaylists: function (page) {
+
+                	var playlists = VodConfigurationPage.config.Playlists;
+
+                    var html = "";
+
+                    for (var i = 0; i < playlists.length; i++) {
+
+                        var playlist = playlists[i];
+
+                        html += '<div class="listItem">';
+
+                        html += '<i class="listItemIcon md-icon">video_library</i>';
+
+                        html += '<div class="listItemBody two-line">';
+
+                        html += '<h3 class="listItemBodyText">';
+                        html += playlist.Name;
+                        html += '</h3>';
+
+                        html += '</div>';
+
+                        html += '<button type="button" is="paper-icon-button-light" onclick="VodConfigurationPage.deletePlaylist(this, ' + i + ');"title="Delete"><i class="md-icon">delete</i></button>';
+                        html += '</div>';
+                    }
+
+                    var streamList = page.querySelector('.js-playlists');
+                    streamList.innerHTML = html;
+
+                    if (playlists.length) {
+                        streamList.classList.remove('hide');
+                    } else {
+                        streamList.classList.add('hide');
+                    }
+                },
+
+                deletePlaylist: function (link, index) {
+
+                    var msg = "Are you sure you wish to delete the this playlist?";
+
+                    Dashboard.confirm(msg, "Delete playlist?", function (result) {
+
+                        if (result) {
+
+                        	VodConfigurationPage.config.Playlists.splice(index, 1);
+
+                            var page = $(link).parents('.page')[0];
+
+                            VodConfigurationPage.save();
+                            VodConfigurationPage.populatePlaylists(page);
+                        }
+                    });
+                },
+
+                addPlaylistPopup: function (page) {
+                	$('#name', page).val("").focus();
+                	$('#streamPopup', page).popup('open');
+                	$('#name', page).focus();
+                },
+
+                save: function () {
+                    Dashboard.showLoadingMsg();
+
+                    ApiClient.getPluginConfiguration(VodConfigurationPage.pluginUniqueId).then(function (config) {
+	                    config.Playlists = VodConfigurationPage.config.Playlists;
+                    	ApiClient.updatePluginConfiguration(VodConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                    });
+                }
+            };
+
+			$('.vodConfigurationPage').on('pageinit', function (event) {
+
+	            console.log('page init');
+
+                var page = this;
+
+                page.querySelector('.btnAdd').addEventListener('click', function () {
+                	VodConfigurationPage.addPlaylistPopup(page);
+                });
+
+                $('#streamForm', page).on('submit', function (e) {
+
+	                e.preventDefault();
+
+                	$('#streamPopup', page).popup('close');
+                	var form = this;
+
+                	var newEntry = true;
+                	var name = $('#name', page).val();
+                	var collectionType = $('#collectionType', page).val();
+                	var url = $('#url', page).val();
+                	var userId = Dashboard.getCurrentUserId();
+
+                	if (VodConfigurationPage.config.Playlists.length > 0) {
+
+                		for (var i = 0, length = VodConfigurationPage.config.Playlists.length; i < length; i++) {
+                			if (VodConfigurationPage.config.Playlists[i].Name == name) {
+                				newEntry = false;
+                				VodConfigurationPage.config.Playlists[i].Url = url;
+                				VodConfigurationPage.config.Playlists[i].CollectionType = collectionType;
+                				VodConfigurationPage.config.Playlists[i].UserId = userId;
+			                }
+                		}
+                	}
+
+                	if (newEntry) {
+
+                		var playlist = {};
+                		playlist.Name = name;
+                		playlist.CollectionType = collectionType;
+                		playlist.Url = url;
+                		playlist.UserId = userId;
+
+                		VodConfigurationPage.config.Playlists.push(playlist);
+                	}
+
+                	VodConfigurationPage.save();
+                	VodConfigurationPage.populatePlaylists(page);
+                });
+
+            }).on('pageshow', function (event) {
+			
+                Dashboard.showLoadingMsg();
+
+                var page = this;
+
+                ApiClient.getPluginConfiguration(VodConfigurationPage.pluginUniqueId).then(function (config) {
+
+                	VodConfigurationPage.config = config;
+
+	                var allowedCollectionTypes = [
+		                'movies'
+	                ];
+
+	                $.each(allowedCollectionTypes,
+						function () {
+							$('#collectionType').append('<option value="' + this + '">' + this + '</option>');
+						});
+
+                	VodConfigurationPage.populatePlaylists(page);
+
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+		</script>
+	</div>
+</body>
+</html>

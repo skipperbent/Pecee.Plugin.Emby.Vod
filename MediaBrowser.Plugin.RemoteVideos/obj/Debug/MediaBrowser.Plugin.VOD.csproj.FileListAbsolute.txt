@@ -1,0 +1,8 @@
+D:\Visual Studio\MediaBrowser.Plugin.RemoteVideos\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Plugin.VOD.dll
+D:\Visual Studio\MediaBrowser.Plugin.RemoteVideos\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Plugin.VOD.pdb
+D:\Visual Studio\MediaBrowser.Plugin.RemoteVideos\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Common.dll
+D:\Visual Studio\MediaBrowser.Plugin.RemoteVideos\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Controller.dll
+D:\Visual Studio\MediaBrowser.Plugin.RemoteVideos\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Model.dll
+D:\Visual Studio\MediaBrowser.Plugin.RemoteVideos\MediaBrowser.Plugin.RemoteVideos\obj\Debug\MediaBrowser.Plugin.VOD.dll
+D:\Visual Studio\MediaBrowser.Plugin.RemoteVideos\MediaBrowser.Plugin.RemoteVideos\obj\Debug\MediaBrowser.Plugin.VOD.pdb
+D:\Visual Studio\MediaBrowser.Plugin.RemoteVideos\MediaBrowser.Plugin.RemoteVideos\obj\Debug\MediaBrowser.Plugin.VOD.csprojResolveAssemblyReference.cache
