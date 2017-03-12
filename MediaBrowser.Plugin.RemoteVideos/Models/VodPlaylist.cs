@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
+using Pecee.Emby.Plugin.Vod.Entities;
 
 namespace Pecee.Emby.Plugin.Vod.Models
 {
@@ -17,9 +18,13 @@ namespace Pecee.Emby.Plugin.Vod.Models
 
 		public override bool SupportsThemeMedia => true;
 
+		public new bool IsHidden { get; set; }
+
 		//private String _collectionType;
 
 		public override bool IsDisplayedAsFolder => false;
+
+		public PlaylistConfig Config { get; set; }
 
 		public string CollectionType { get { return "VodMovie"; } }
 
@@ -53,12 +58,17 @@ namespace Pecee.Emby.Plugin.Vod.Models
 			IdentifierId = Guid.NewGuid();
 			SourceType = SourceType.Library;
 			IsVirtualItem = false;
-			//ChannelId = PluginConfiguration.PluginId;
 		}
 
 		public async Task<bool> Merge(VodPlaylist remote)
 		{
 			var hasUpdate = false;
+
+			if (remote.IsHidden != this.IsHidden)
+			{
+				hasUpdate = true;
+				this.IsHidden = remote.IsHidden;
+			}
 
 			if (remote.PlaylistUrl != this.PlaylistUrl)
 			{

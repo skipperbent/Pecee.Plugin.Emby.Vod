@@ -39,6 +39,16 @@
 								<label for="url">Url:</label>
 								<input id="url" type="url" data-mini="true" required />
 							</div>
+							<div>
+								<label for="create_collection">Create local collection</label>
+								<input id="create_collection" type="checkbox" value="1"/><br>
+								<small>Create visible collection outside channel</small>
+							</div>
+							<div>
+								<label for="strict_sync">Strict Sync</label>
+								<input id="strict_sync" type="checkbox" value="1" checked /><br>
+								<small>When playlist items are deleted, local items will also be deleted.</small>
+							</div>
 							<br />
 							<button type="submit" data-theme="b" data-mini="true">Add</button>
 							<button type="button" data-theme="c" onclick="$('#streamPopup').popup('close')" data-mini="true">Cancel</button>
@@ -165,6 +175,8 @@
                 	var name = $('#name', page).val();
                 	var collectionType = $('#collectionType', page).val();
                 	var url = $('#url', page).val();
+                	var createCollection = $('#create_collection', page).val();
+                	var strictSync = $('#strict_sync', page).val();
                 	var userId = Dashboard.getCurrentUserId();
 
                 	if (VodConfigurationPage.config.Playlists.length > 0) {
@@ -175,6 +187,8 @@
                 				VodConfigurationPage.config.Playlists[i].Url = url;
                 				VodConfigurationPage.config.Playlists[i].CollectionType = collectionType;
                 				VodConfigurationPage.config.Playlists[i].UserId = userId;
+                				VodConfigurationPage.config.Playlists[i].CreateLocalCollection = createCollection;
+                				VodConfigurationPage.config.Playlists[i].StrictSync = strictSync;
 			                }
                 		}
                 	}
@@ -186,6 +200,8 @@
                 		playlist.CollectionType = collectionType;
                 		playlist.Url = url;
                 		playlist.UserId = userId;
+                		playlist.CreateLocalCollection = createCollection;
+                		playlist.StrictSync = strictSync;
 
                 		VodConfigurationPage.config.Playlists.push(playlist);
                 	}

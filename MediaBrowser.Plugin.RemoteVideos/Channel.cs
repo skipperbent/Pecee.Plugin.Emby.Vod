@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Channels;
-using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Channels;
 using MediaBrowser.Model.Entities;
@@ -12,7 +12,6 @@ using MediaBrowser.Model.Logging;
 using Pecee.Emby.Plugin.Vod.Configuration;
 using Pecee.Emby.Plugin.Vod.Folder;
 using Pecee.Emby.Plugin.Vod.Models;
-using Pecee.Emby.Plugin.Vod.Parser;
 using ChannelFolderType = Pecee.Emby.Plugin.Vod.Folder.ChannelFolderType;
 
 namespace Pecee.Emby.Plugin.Vod
@@ -25,7 +24,7 @@ namespace Pecee.Emby.Plugin.Vod
 
 		public string DataVersion
 		{
-			get { return "102"; }
+			get { return "112"; }
 		}
 
 		public string HomePageUrl => PluginConfiguration.HomepageUrl;
@@ -34,13 +33,13 @@ namespace Pecee.Emby.Plugin.Vod
 
 		private readonly ILogger _logger;
 		private readonly IProviderManager _providerManager;
-		private readonly M3UParser _m3UParser;
+		private readonly ILibraryManager _libraryManager;
 
-		public Channel(ILogManager logManager, IProviderManager providerManager, M3UParser m3UParser)
+		public Channel(ILogManager logManager, IProviderManager providerManager, ILibraryManager libraryManager)
 		{
 			_logger = logManager.GetLogger(PluginConfiguration.Name);
 			_providerManager = providerManager;
-			_m3UParser = m3UParser;
+			_libraryManager = libraryManager;
 		}
 
 		public InternalChannelFeatures GetChannelFeatures()
@@ -115,7 +114,6 @@ namespace Pecee.Emby.Plugin.Vod
 					Id = ChannelFolder.GetUrl(ChannelFolderType.Playlist, playlist.IdentifierId.ToString()),
 					Type = ChannelItemType.Folder,
 					Name = playlist.Name,
-					ImageUrl = Plugin.GetImage("movies").Path,
 				};
 
 				channelItems.Add(item);
@@ -138,10 +136,10 @@ namespace Pecee.Emby.Plugin.Vod
 			{
 				case ChannelFolderType.Playlist:
 				{
-					var playlist = Plugin.Instance.GetPlaylists().FirstOrDefault(p => p.IdentifierId.ToString() == folder.Id);
+					var playlist = _libraryManager.GetUserRootFolder().RecursiveChildren.OfType<VodPlaylist>().FirstOrDefault(p => p.IdentifierId.ToString() == folder.Id);
 					if (playlist != null)
 					{
-						return await GetPlaylistItems(playlist, cancellationToken).ConfigureAwait(false);
+						return GetPlaylistItems(playlist, cancellationToken);
 					}
 					break;
 				}
@@ -150,52 +148,34 @@ namespace Pecee.Emby.Plugin.Vod
 			return GetChannelPlaylists(query);
 		}
 
-		public async Task<ChannelItemResult> GetPlaylistItems(VodPlaylist playlist, CancellationToken cancellationToken)
+		public ChannelItemResult GetPlaylistItems(VodPlaylist playlist, CancellationToken cancellationToken)
 		{
-			List<VodMovie> mediaItems = await _m3UParser.GetMediaItems(playlist, cancellationToken).ConfigureAwait(false);
-
-			var items = new List<ChannelItemInfo>();
-
-			foreach (var media in mediaItems)
-			{
-				var image = media.GetImages(ImageType.Primary).FirstOrDefault();
-
-				var info = new ChannelItemInfo()
+			var mediaItems = playlist.RecursiveChildren.OfType<VodMovie>().ToList();
+		
+			var items = (from media in mediaItems
+				let image = media.GetImages(ImageType.Primary).FirstOrDefault()
+				select new ChannelItemInfo()
 				{
-					Id = media.IdentifierId.ToString(),
-					Name = media.Name,
-					ImageUrl = image?.Path,
-					Type = ChannelItemType.Media,
-					MediaType = ChannelMediaType.Video,
+					Id = media.IdentifierId.ToString(), 
+					Name = media.Name, 
+					ImageUrl = image?.Path, 
+					Type = ChannelItemType.Media, 
+					MediaType = ChannelMediaType.Video, 
 					ContentType = ChannelMediaContentType.Movie,
 					MediaSources = media.ChannelMediaSources,
-				};
-
-				var meta = await _providerManager.GetRemoteSearchResults<Movie, MovieInfo>(new RemoteSearchQuery<MovieInfo>
-				{
-					IncludeDisabledProviders = true,
-					SearchInfo = new MovieInfo
-					{
-						Name = media.Name,
-					}
-
-				}, cancellationToken).ConfigureAwait(false);
-
-				var metaResult = meta.FirstOrDefault();
-
-				if (meta != null)
-				{
-					_logger.Debug("Found meta-data for {0}", metaResult.Name);
-					info.Name = metaResult.Name;
-					info.Overview = metaResult.Overview;
-					info.ImageUrl = metaResult.ImageUrl;
-					info.PremiereDate = metaResult.PremiereDate;
-					info.ProductionYear = metaResult.ProductionYear;
-					info.ProviderIds = metaResult.ProviderIds;
-				}
-
-				items.Add(info);
-			}
+					Tags = media.Tags,
+					CommunityRating = media.CommunityRating,
+					Studios = media.Studios,
+					DateCreated = media.DateCreated,
+					ProductionYear = media.ProductionYear,
+					ProviderIds = media.ProviderIds,
+					Overview = media.Overview,
+					Genres = media.Genres,
+					HomePageUrl = media.HomePageUrl,
+					OfficialRating = media.OfficialRating,
+					PremiereDate = media.PremiereDate,
+					RunTimeTicks = media.RunTimeTicks,
+				}).ToList();
 
 			return new ChannelItemResult()
 			{
@@ -206,13 +186,13 @@ namespace Pecee.Emby.Plugin.Vod
 
 		public async Task<ChannelItemResult> GetAllMedia(InternalAllChannelMediaQuery query, CancellationToken cancellationToken)
 		{
-			var playlists = Plugin.Instance.GetPlaylists();
+			var playlists = _libraryManager.GetUserRootFolder().RecursiveChildren.OfType<VodPlaylist>().ToList();
 
 			var items = new List<ChannelItemInfo>();
 
 			foreach (var playlist in playlists)
 			{
-				var result = await GetPlaylistItems(playlist, cancellationToken).ConfigureAwait(false);
+				var result = GetPlaylistItems(playlist, cancellationToken);
 				items.AddRange(result.Items);
 			}
 
@@ -230,3 +210,4 @@ namespace Pecee.Emby.Plugin.Vod
 		}*/
 	}
 }
+

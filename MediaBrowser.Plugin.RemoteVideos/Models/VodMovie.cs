@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using MediaBrowser.Controller.Entities.Movies;
@@ -13,12 +14,14 @@ namespace Pecee.Emby.Plugin.Vod.Models
 
 		public override LocationType LocationType => LocationType.Remote;
 
+		[IgnoreDataMember]
+		public VodPlaylist Playlist { get; set; }
+
 		public VodMovie()
 		{
 			this.VideoType = VideoType.VideoFile;
 			DefaultVideoStreamIndex = -1;
 			IsVirtualItem = false;
-			//ChannelId = PluginConfiguration.PluginId;
 		}
 
 		public async Task<bool> Merge(VodMovie vodMovie)
