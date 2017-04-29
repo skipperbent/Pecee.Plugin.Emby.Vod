@@ -6,11 +6,13 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System.Threading.Tasks;
+using MediaBrowser.Common.Progress;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using Pecee.Emby.Plugin.Vod.Configuration;
+using Pecee.Emby.Plugin.Vod.Entities;
 using Pecee.Emby.Plugin.Vod.Models;
 using Pecee.Emby.Plugin.Vod.Parser;
 
@@ -44,11 +46,9 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 			_m3UParser = m3UParser;
 		}
 
-		public async Task Cleanup(CancellationToken cancellationToken)
+		public async Task Cleanup(PlaylistConfig[] playlists, CancellationToken cancellationToken)
 		{
 			_logger.Debug("Cleaning up old and removed items");
-
-			var playlists = Plugin.Instance.GetPlaylists();
 
 			var deleteItems = _libraryManager.GetUserRootFolder()
 				.RecursiveChildren.OfType<VodPlaylist>()
@@ -71,19 +71,19 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 				_logger.Debug("Removing dead item: {0}, id:  {1}, parentId: {2}", item.Name, item.Id, item.ParentId);
 				await item.Delete(new DeleteOptions()
 				{
-					DeleteFileLocation = false
+					DeleteFileLocation = true
 				});
 			}
 		}
 
 		public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
 		{
-			await Cleanup(cancellationToken);
+			var playlists = Plugin.Instance.Configuration.Playlists;
 
-			var playlists = Plugin.Instance.GetPlaylists();
+			await Cleanup(playlists, cancellationToken);
 
 			// No point going further if we don't have users.
-			if (playlists.Count == 0)
+			if (playlists.Length == 0)
 			{
 				_logger.Info("No internal playlists added");
 				return;
@@ -99,15 +99,16 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 
 			var i = 1;
 
-			foreach (VodPlaylist playlist in playlists)
+			foreach (PlaylistConfig playlistConfig in playlists)
 			{
-				progress.Report((i / playlists.Count) * 100);
+				var playlist = playlistConfig.ToPlaylist();
+				progress.Report((i / playlists.Length) * 100);
 				var existingPlaylist = existingPlaylists.FirstOrDefault(p1 => p1.IdentifierId == playlist.IdentifierId);
+
 				if (existingPlaylist != null)
 				{
 					// UPDATE
-					_logger.Debug("{0}: playlist with id {1} and identifier {2} found, updating...", existingPlaylist.Name,
-						existingPlaylist.Id, existingPlaylist.IdentifierId);
+					_logger.Debug("{0}: playlist with id {1} and identifier {2} found, updating...", existingPlaylist.Name, existingPlaylist.Id, existingPlaylist.IdentifierId);
 					await existingPlaylist.Merge(existingPlaylist);
 				}
 				else
@@ -118,7 +119,12 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 					await _libraryManager.GetUserRootFolder().AddChild(playlist, cancellationToken).ConfigureAwait(false);
 				}
 
-				await SyncMedia(playlist, cancellationToken).ConfigureAwait(false);
+				var innerProgress = new ActionableProgress<double>();
+
+				// Avoid implicitly captured closure
+				innerProgress.RegisterAction(progress.Report);
+
+				await SyncMedia(playlist, innerProgress, cancellationToken).ConfigureAwait(false);
 
 				i++;
 			}
@@ -127,11 +133,11 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 			_libraryManager.QueueLibraryScan();
 		}
 
-		private async Task SyncMedia(VodPlaylist playlist, CancellationToken cancellationToken)
+		private async Task SyncMedia(VodPlaylist playlist, IProgress<double> progress, CancellationToken cancellationToken)
 		{
 			_logger.Info("{0}: parsing remote playlist: {1}", playlist.Name, playlist.PlaylistUrl);
 			
-			List<VodMovie> mediaItems = await _m3UParser.GetMediaItems(playlist, cancellationToken);
+			List<Media> mediaItems = await _m3UParser.GetMediaItems(playlist, cancellationToken);
 
 			var existingMediaItems =
 				_libraryManager.GetUserRootFolder()
@@ -139,33 +145,60 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 					.Where(p1 => mediaItems.FirstOrDefault(p2 => p2.IdentifierId == p1.IdentifierId) != null)
 					.ToList();
 
+			if (playlist.Config.StrictSync)
+			{
+				// Remove local items that no longer exist on remote playlist
+				var deleteLocally =
+					playlist.RecursiveChildren.OfType<VodMovie>()
+						.Where(m => mediaItems.Select(m1 => m1.IdentifierId).Contains(m.IdentifierId) == false).ToList();
+
+				foreach (var item in deleteLocally)
+				{
+					await item.Delete(new DeleteOptions()
+					{
+						DeleteFileLocation = true
+					});
+				}
+
+			}
+
+			var i = 1;
+
 			foreach (var media in mediaItems)
 			{
+				progress.Report((i / mediaItems.Count) * 100);
+				var vodItem = (VodMovie)media.ToVodItem();
 				try
 				{
-					var existingMediaItem = existingMediaItems.FirstOrDefault(m => m.IdentifierId == media.IdentifierId);
+					var existingMediaItem = existingMediaItems.FirstOrDefault(m => m.IdentifierId == vodItem.IdentifierId);
+
 					if (existingMediaItem != null)
 					{
 						// UPDATE
-						_logger.Debug("{0}: found item with id {1} and identifier {2}, updating...", playlist.Name, existingMediaItem.Id,
-							existingMediaItem.IdentifierId);
-						await existingMediaItem.Merge(media);
+						_logger.Debug("{0}: found item with id {1} and identifier {2}, updating...", playlist.Name, existingMediaItem.Id, existingMediaItem.IdentifierId);
+						await existingMediaItem.Merge(vodItem);
+						await RefreshMetaData(vodItem, cancellationToken).ConfigureAwait(false);
 					}
 					else
 					{
 						// CREATE
-						_logger.Debug("{0}: media {1} with  identifier {2} not found, adding...", playlist.Name, media.Name, media.IdentifierId);
-						media.Id = _libraryManager.GetNewItemId(media.IdentifierId.ToString(), typeof(VodMovie));
-						await playlist.AddChild(media, cancellationToken).ConfigureAwait(false);
-					}
+						_logger.Debug("{0}: media {1} with  identifier {2} not found, adding...", playlist.Name, vodItem.Name, vodItem.IdentifierId);
+						vodItem.Id = _libraryManager.GetNewItemId(vodItem.IdentifierId.ToString(), typeof(VodMovie));
+						await playlist.AddChild(vodItem, cancellationToken).ConfigureAwait(false);
 
-					await RefreshMetaData(media, cancellationToken).ConfigureAwait(false);
+						await RefreshMetaData(vodItem, cancellationToken).ConfigureAwait(false);
+						await vodItem.RefreshMetadata(cancellationToken).ConfigureAwait(false);
+					}
 				}
 				catch (Exception e)
 				{
 					_logger.ErrorException(e.Message, e);
 				}
+
+				i++;
 			}
+
+			progress.Report(100);
 		}
 
 		private async Task<BaseItem> RefreshMetaData(BaseItem item, CancellationToken cancellationToken)
@@ -202,16 +235,20 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 
 			if (metaResult.ImageUrl != null)
 			{
-				if (item.ImageInfos == null)
-				{
-					item.ImageInfos = new List<ItemImageInfo>();
-				}
+				var newImages = new List<ItemImageInfo>();
 
-				item.ImageInfos.Add(new ItemImageInfo()
+				newImages.Add(new ItemImageInfo()
 				{
 					Path = metaResult.ImageUrl,
 					Type = ImageType.Primary,
 				});
+
+				if (item.ImageInfos!= null)
+				{
+					newImages.AddRange(item.ImageInfos);
+				}
+
+				item.ImageInfos = newImages;
 			}
 
 			return item;

@@ -12,6 +12,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using Pecee.Emby.Plugin.Vod.Configuration;
+using Pecee.Emby.Plugin.Vod.Entities;
 using Pecee.Emby.Plugin.Vod.Models;
 
 namespace Pecee.Emby.Plugin.Vod.Parser
@@ -64,9 +65,9 @@ namespace Pecee.Emby.Plugin.Vod.Parser
 			return attributes;
 		}
 
-		public async Task<List<VodMovie>> GetMediaItems(VodPlaylist playlist, CancellationToken cancellationToken)
+		public async Task<List<Media>> GetMediaItems(VodPlaylist playlist, CancellationToken cancellationToken)
 		{
-			var items = new List<VodMovie>();
+			var items = new List<Media>();
 
 			_logger.Debug("{0}: Starting to parse: {1}", playlist.Name, playlist.PlaylistUrl);
 
@@ -106,36 +107,13 @@ namespace Pecee.Emby.Plugin.Vod.Parser
 						var imageUrl = (imgUri != null) ? imgUri.ToString() : null;
 						_logger.Debug("Adding: {0}, stream playlistUrl: {0}, image: {0}", attributes["tvg-name"], streamUrl, imageUrl);
 
-						var media = new VodMovie()
+						var media = new Media()
 						{
 							Name = attributes["tvg-name"].Trim(),
-							OriginalTitle = attributes["tvg-name"].Trim(),
-							Path = streamUrl.ToString(),
-							DefaultVideoStreamIndex = -1,
-							ParentId = playlist.Id,
-							IdentifierId = streamUrl.ToString().GetMD5(),
+							Url = streamUrl.ToString(),
+							PlaylistId = playlist.Id,
+							Image = (imageUrl != null) ? imageUrl : null
 						};
-
-						media.ChannelMediaSources = new List<ChannelMediaInfo>
-						{
-							new ChannelMediaInfo
-							{
-								Path = streamUrl.ToString(),
-								Protocol = MediaProtocol.Http,
-							}
-						};
-
-						if (imageUrl != null)
-						{
-							media.ImageInfos = new List<ItemImageInfo>()
-							{
-								new ItemImageInfo()
-								{
-									Path = imageUrl,
-									Type = ImageType.Primary,
-								}
-							};
-						}
 
 						items.Add(media);
 					}

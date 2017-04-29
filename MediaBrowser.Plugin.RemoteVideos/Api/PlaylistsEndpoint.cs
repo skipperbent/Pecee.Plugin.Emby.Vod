@@ -22,6 +22,12 @@ namespace Pecee.Emby.Plugin.Vod.Api
 
 		[ApiMember(Name = "UserId", Description = "UserId", IsRequired = true, DataType = "string", ParameterType = "path", Verb = "POST")]
 		public string UserId { get; set; }
+
+		[ApiMember(Name = "StrictSync", Description = "Delete local items when remote deleted", IsRequired = true, DataType = "bool", ParameterType = "path", Verb = "POST")]
+		public bool StrictSync { get; set; }
+
+		[ApiMember(Name = "CreateCollection", Description = "Create local collection", IsRequired = true, DataType = "bool", ParameterType = "path", Verb = "POST")]
+		public bool CreateCollection { get; set; }
 	}
 
 	[Route("/vod/collectiontypes", "GET", Summary = "Get supported collection-types")]
@@ -66,7 +72,9 @@ namespace Pecee.Emby.Plugin.Vod.Api
 				UserId = request.UserId,
 				Name = request.Name,
 				Url = request.Url.ToString(),
-				CollectionType = request.CollectionType
+				CollectionType = request.CollectionType,
+				CreateLocalCollection = request.CreateCollection,
+				StrictSync = request.StrictSync,
 			});
 
 			Plugin.Instance.Configuration.Playlists = list.ToArray();

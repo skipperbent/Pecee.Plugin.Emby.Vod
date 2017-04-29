@@ -39,18 +39,6 @@ namespace Pecee.Emby.Plugin.Vod
 			};
 		}
 
-		public List<VodPlaylist> GetPlaylists()
-		{
-			return Configuration.Playlists.Select(playlistConf => new VodPlaylist()
-			{
-				UserId = playlistConf.UserId, 
-				Name = playlistConf.Name, 
-				PlaylistUrl = playlistConf.Url, 
-				CollectionType = playlistConf.CollectionType,
-				IdentifierId = playlistConf.IdentifierId
-			}).ToList();
-		}
-
 		public static DynamicImageResponse GetImage(string name)
 		{
 			var type = typeof(Plugin);
