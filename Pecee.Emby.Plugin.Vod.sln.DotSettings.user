@@ -3,4 +3,6 @@
   &lt;Assembly Path="E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\packages\MediaBrowser.Theater.3.0.74\lib\net45\MediaBrowser.Theater.Interfaces.dll" /&gt;&#xD;
   &lt;Assembly Path="E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\packages\MediaBrowser.Common.3.0.695\lib\portable-net45+win8+wpa81\MediaBrowser.Model.dll" /&gt;&#xD;
   &lt;Assembly Path="E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\packages\MediaBrowser.Server.Core.3.0.695\lib\net45\MediaBrowser.Controller.dll" /&gt;&#xD;
+  &lt;Assembly Path="E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\packages\MediaBrowser.Server.Core.3.5.0\lib\netstandard2.0\MediaBrowser.Controller.dll" /&gt;&#xD;
+  &lt;Assembly Path="C:\Users\simon\.nuget\packages\mediabrowser.common\3.5.0\lib\netstandard2.0\MediaBrowser.Model.dll" /&gt;&#xD;
 &lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>

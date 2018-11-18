@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Runtime.Remoting;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
@@ -10,7 +12,7 @@ using MediaBrowser.Model.Serialization;
 namespace Pecee.Emby.Plugin.Vod.Models
 {
 	public class VodMovie : Movie, IVodMedia
-	{
+    {
 		public Guid IdentifierId { get; set; }
 
 		public override LocationType LocationType => LocationType.Remote;
@@ -31,14 +33,14 @@ namespace Pecee.Emby.Plugin.Vod.Models
 
 			if (vodMovie.Path != this.Path)
 			{
-				hasUpdate = true;
+			    hasUpdate = true;
 				this.Path = vodMovie.Path;
-				this.ChannelMediaSources = vodMovie.ChannelMediaSources;
+				this.GetMediaSources(true).AddRange(vodMovie.GetMediaSources(true));
 			}
 
 			if (hasUpdate)
 			{
-				await this.UpdateToRepository(ItemUpdateType.None, CancellationToken.None);
+				this.UpdateToRepository(ItemUpdateType.None, CancellationToken.None);
 			}
 
 			return hasUpdate;
@@ -55,6 +57,6 @@ namespace Pecee.Emby.Plugin.Vod.Models
 		{
 			return System.IO.Path.Combine(basePath, "channels", id.ToString("N"), "metadata");
 		}
-
+       
 	}
 }

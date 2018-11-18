@@ -1,13 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Drawing;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 using Pecee.Emby.Plugin.Vod.Configuration;
+using Pecee.Emby.Plugin.Vod.Entities;
+using Pecee.Emby.Plugin.Vod.Folder;
+using Pecee.Emby.Plugin.Vod.Models;
 
 namespace Pecee.Emby.Plugin.Vod
 {
@@ -20,9 +27,15 @@ namespace Pecee.Emby.Plugin.Vod
 
 		public override string Description => PluginConfiguration.Description;
 
-		public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer) : base(applicationPaths, xmlSerializer)
+        public ILogger Logger { get; }
+        public ILibraryManager LibraryManager { get; }
+
+		public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, ILogManager logger, ILibraryManager libraryManager) : base(applicationPaths, xmlSerializer)
 		{
 			Instance = this;
+		    Logger = logger.GetLogger(PluginConfiguration.Name);
+		    LibraryManager = libraryManager;
+
 		}
 
 		public IEnumerable<PluginPageInfo> GetPages()
@@ -37,7 +50,34 @@ namespace Pecee.Emby.Plugin.Vod
 			};
 		}
 
-		public static DynamicImageResponse GetImage(string name)
+        public override void OnUninstalling()
+        {
+
+            // Cleanup
+            Logger.Info("Start uninstall cleanup");
+
+            var types = new []
+            {
+                typeof(VodPlaylist), typeof(Channel), typeof(Media), typeof(ChannelFolder)
+            };
+
+            foreach (var playlist in LibraryManager.GetItemList(new InternalItemsQuery(), false).Where(i => types.Contains(i.GetType())).ToList())
+            {
+                Logger.Info("Removing VOD playlist: {0}", playlist.Name);
+                
+                LibraryManager.DeleteItem(playlist, new DeleteOptions()
+                {
+                    DeleteFileLocation = false,
+                    DeleteFromExternalProvider = true,
+                }, true);
+            }
+
+            Logger.Info("Finished uninstall cleanup");
+
+            base.OnUninstalling();
+        }
+
+        public static DynamicImageResponse GetImage(string name)
 		{
 			var type = typeof(Plugin);
 			var path = String.Format("{0}.Images.{1}.png", type.Namespace, name);

@@ -21,9 +21,10 @@ namespace Pecee.Emby.Plugin.Vod.Folder
 		{
 			if (string.IsNullOrEmpty(id))
 			{
-				return type + "-";
+				return type + "_";
 			}
-			return string.Format("{0}-{1}", type, id);
+
+			return string.Format("{0}_{1}", type.ToString().ToLower(), id.ToString());
 		}
 
 		public override string ToString()
@@ -38,26 +39,26 @@ namespace Pecee.Emby.Plugin.Vod.Folder
 				return new ChannelFolder(ChannelFolderType.Home);
 			}
 
-			var match = Regex.Match(folderId, "(?<type>.*?)-(?<id>.*)?");
-			if (!match.Success)
+		    var match = folderId.Split('_');
+           
+			if (match.Length == 0)
 			{
 				throw new ArgumentException("Failed to parse folderId", "folderId");
 			}
 
 			ChannelFolderType type;
 
-			if (!Enum.TryParse(match.Groups["type"].Value, out type))
+			if (!Enum.TryParse(match[0], out type))
 			{
-				throw new ArgumentException("Invalid or unknown folder-type: " + match.Groups["type"].Value);
+				throw new ArgumentException("Invalid or unknown folder-type: " + match[0]);
 			}
-		
-			var result = new ChannelFolder(type);
 
-			var id = match.Groups["id"];
-			if (id != null)
-			{
-				result.Id = id.Value;
-			}
+		    var result = new ChannelFolder(type)
+		    {
+		        Id = String.IsNullOrEmpty(match[1]) ? null : match[1],
+                Type = type,
+		    };
+
 			return result;
 		}
 	}

@@ -20,7 +20,7 @@ namespace Pecee.Emby.Plugin.Vod.Configuration
 		public static string Description =
 			"Add remote playlist for instant Video On Demand that will be integrated with your local library.";
 
-		public static string Version = "1.0.0.0";
+		public static string Version = "2.0.0.0";
 
 		public static string HomepageUrl = "http://www.pecee.dk";
 
@@ -33,7 +33,6 @@ namespace Pecee.Emby.Plugin.Vod.Configuration
 		public PluginConfiguration()
 		{
 			Playlists = new PlaylistConfig[] { };
-			ChannelEnabled = true;
 		}
 	}
 	

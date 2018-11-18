@@ -52,15 +52,25 @@ namespace Pecee.Emby.Plugin.Vod.Models
 		public override bool SupportsDateLastMediaAdded => true;
 
 		public DateTime LastImportDate { get; set; }
-		
-		public VodPlaylist()
+
+	    private SourceType _sourceType { get; set; }
+
+	    public new SourceType SourceType
+	    {
+	        get { return _sourceType; }
+	        set { _sourceType = value; }
+	    }
+
+	    public VodPlaylist()
 		{
 			IdentifierId = Guid.NewGuid();
 			SourceType = SourceType.Library;
 			IsVirtualItem = false;
+
+		    //IsHidden = true;
 		}
 
-		public async Task<bool> Merge(VodPlaylist remote)
+		public bool Merge(VodPlaylist remote)
 		{
 			var hasUpdate = false;
 
@@ -79,12 +89,14 @@ namespace Pecee.Emby.Plugin.Vod.Models
 			if (remote.SourceType != this.SourceType)
 			{
 				hasUpdate = true;
-				this.SourceType = remote.SourceType;
+				
+			    // todo: possible bug?
+			    //this.SourceType = remote.SourceType;
 			}
 
 			if (hasUpdate)
 			{
-				await this.UpdateToRepository(ItemUpdateType.None, CancellationToken.None);
+				this.UpdateToRepository(ItemUpdateType.None, CancellationToken.None);
 			}
 
 			return hasUpdate;

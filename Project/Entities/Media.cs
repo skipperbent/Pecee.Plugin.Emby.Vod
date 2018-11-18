@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MediaBrowser.Common.Extensions;
 using MediaBrowser.Controller.Channels;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
 using Pecee.Emby.Plugin.Vod.Models;
@@ -33,26 +34,26 @@ namespace Pecee.Emby.Plugin.Vod.Entities
 				IdentifierId = this.Url.ToString().GetMD5(),
 			};
 
-			media.ChannelMediaSources = new List<ChannelMediaInfo>
-			{
-				new ChannelMediaInfo
+            media.GetMediaSources(true).Add(
+				new MediaSourceInfo
 				{
 					Path = Url,
-					Protocol = MediaProtocol.Http,
-				}
-			};
+                    TranscodingUrl = Url,
+                    IsRemote = true,
+                    Protocol = MediaProtocol.Http
+				});
 
 			if (Image != null)
 			{
-				media.ImageInfos = new List<ItemImageInfo>()
-				{
-					new ItemImageInfo()
-					{
-						Path = Image,
-						Type = ImageType.Primary,
-						DateModified = DateTime.Now
-					}
-				};
+			    media.ImageInfos = new ItemImageInfo[]
+			    {
+			        new ItemImageInfo()
+			        {
+			            Path = Image,
+			            Type = ImageType.Primary,
+			            DateModified = DateTime.Now
+			        }
+			    };
 			}
 
 			return media;

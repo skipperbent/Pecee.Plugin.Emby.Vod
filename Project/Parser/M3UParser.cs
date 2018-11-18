@@ -20,13 +20,12 @@ namespace Pecee.Emby.Plugin.Vod.Parser
 	public class M3UParser
 	{
 		private readonly Regex _regexPattern = new Regex(@"([^=\s]+)\=[""']([^""']+)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
-		private readonly ILogger _logger;
+		private readonly ILogger _logger = Plugin.Instance.Logger;
 		private readonly IHttpClient _httpClient;
 
-		public M3UParser(ILogManager logManager, IHttpClient httpClient)
+		public M3UParser(IHttpClient httpClient)
 		{
 			_httpClient = httpClient;
-			_logger = logManager.GetLogger(PluginConfiguration.Name);
 		}
 
 		public Dictionary<string, string> ParseAttributes(string line)
@@ -71,7 +70,11 @@ namespace Pecee.Emby.Plugin.Vod.Parser
 
 			_logger.Debug("{0}: Starting to parse: {1}", playlist.Name, playlist.PlaylistUrl);
 
-			using (Stream stream = await _httpClient.Get(playlist.PlaylistUrl.ToString(), CancellationToken.None).ConfigureAwait(false))
+			using (Stream stream = await _httpClient.Get(new HttpRequestOptions()
+			{
+                Url = playlist.PlaylistUrl,
+                TimeoutMs = 9000
+			}).ConfigureAwait(false))
 			{
 				using (var reader = new StreamReader(stream))
 				{
