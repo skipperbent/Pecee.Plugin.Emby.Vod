@@ -1,0 +1,11 @@
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Pecee.Plugin.Emby.Vod\bin\Debug\Pecee.Plugin.Emby.Vod.dll
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Pecee.Plugin.Emby.Vod\bin\Debug\Pecee.Plugin.Emby.Vod.pdb
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Pecee.Plugin.Emby.Vod\bin\Debug\MediaBrowser.Theater.Interfaces.dll
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Pecee.Plugin.Emby.Vod\bin\Debug\MediaBrowser.Theater.Presentation.dll
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Pecee.Plugin.Emby.Vod\bin\Debug\Microsoft.Expression.Effects.dll
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Pecee.Plugin.Emby.Vod\bin\Debug\Microsoft.Expression.Interactions.dll
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Pecee.Plugin.Emby.Vod\obj\Debug\Pecee.Plugin.Emby.Vod.csproj.CoreCompileInputs.cache
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Pecee.Plugin.Emby.Vod\obj\Debug\Pecee.Plugin.Emby.Vod.csproj.CopyComplete
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Pecee.Plugin.Emby.Vod\obj\Debug\Pecee.Plugin.Emby.Vod.dll
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Pecee.Plugin.Emby.Vod\obj\Debug\Pecee.Plugin.Emby.Vod.pdb
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Pecee.Plugin.Emby.Vod\obj\Debug\Pecee.Plugin.Emby.Vod.csprojAssemblyReference.cache

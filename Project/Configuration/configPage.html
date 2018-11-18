@@ -1,0 +1,258 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>VOD Plugin Configuration</title>
+</head>
+<body>
+    <div id="vodConfigurationPage" data-role="page" class="page type-interior vodConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
+        <div data-role="content">
+            <div class="content-primary">
+                <div id="vodConfigurationForm" class="readOnlyContent">
+
+                    <div class="sectionTitleContainer sectionTitleContainer-cards flex align-items-center">
+                        <h2 class="sectionTitle sectionTitle-cards">Video on Demand</h2>
+                        <button is="emby-button" type="button" class="raised button-alt headerHelpButton emby-button js-add-playlist" style="margin-left: 1em;" title="Add Playlist">
+                            <i class="md-icon">add</i>
+                            <span>Add Playlist</span>
+                        </button>
+                    </div>
+                    <div class="streamList paperList js-playlists">
+
+                    </div>
+                </div>
+
+                <div data-role="popup" id="streamPopup" data-history="false" data-dismissible="false">
+                    <div class="ui-bar-a">
+                        <h3>Add new Playlist</h3>
+                    </div>
+                    <div data-role="content">
+                        <form id="streamForm" style="min-width: 220px;">
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabel-float inputLabelUnfocused" for="name">
+                                    Name
+                                </label>
+                                <input id="name" type="text" required class="emby-input">
+                            </div>
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabel-float inputLabelUnfocused" for="collectionType">
+                                    Collection Type
+                                </label>
+                                <select id="collectionType" required class="emby-input"></select>
+                            </div>
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabel-float inputLabelUnfocused" for="url">
+                                    Url
+                                </label>
+                                <input id="url" type="url" required class="emby-input">
+                            </div>
+                            <div class="checkboxContainer">
+                                <label class="inputLabel inputLabel-float inputLabelUnfocused" for="create_collection">
+                                    Create local collection
+                                    <input is="emby-checkbox" id="create_collection" type="checkbox" value="1" class="emby-input">
+                                    <span>Create visible collection outside the channel</span>
+                                </label>
+                                
+                            </div>
+                            <div class="checkboxContainer">
+                                <label class="inputLabel inputLabel-float inputLabelUnfocused" for="strict_sync">
+                                    Strict Sync
+                                    <input is="emby-checkbox" id="strict_sync" type="checkbox" value="1" class="emby-input">
+                                    <span>When items are deleted remotely, local items will also be deleted.</span>
+                                </label>
+                            </div>
+                            <button type="submit" class="raised emby-button" data-mini="true">Add</button>
+                            <button type="button" class="raised emby-button" data-mini="true">Cancel</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+			var VodConfigurationPage = {
+            	pluginUniqueId: "7A54F58C-F05E-4BFB-AD64-7E92FAEB0DA2",
+
+                populatePlaylists: function (page) {
+
+                	var playlists = VodConfigurationPage.config.Playlists;
+
+                    var html = "";
+
+                    for (var i = 0; i < playlists.length; i++) {
+
+                        var playlist = playlists[i];
+
+                        html += '<div class="listItem">';
+
+                        html += '<i class="listItemIcon md-icon">video_library</i>';
+
+                        html += '<div class="listItemBody two-line">';
+
+                        html += '<h3 class="listItemBodyText">';
+                        html += playlist.Name;
+                        html += '</h3>';
+
+                        html += '</div>';
+
+                        html += '<button type="button" is="paper-icon-button-light" onclick="VodConfigurationPage.deletePlaylist(this, ' + i + ');"title="Delete"><i class="md-icon">delete</i></button>';
+                        html += '</div>';
+                    }
+
+                    var streamList = page.querySelector('.js-playlists');
+                    streamList.innerHTML = html;
+
+                    if (playlists.length) {
+                        streamList.classList.remove('hide');
+                    } else {
+                        streamList.classList.add('hide');
+                    }
+                },
+
+                deletePlaylist: function (link, index) {
+
+                    var msg = "Are you sure you wish to delete the this playlist?";
+
+                    Dashboard.confirm(msg, "Delete playlist?", function (result) {
+
+                        if (result) {
+
+                        	VodConfigurationPage.config.Playlists.splice(index, 1);
+
+                            var page = $(link).parents('.page')[0];
+
+                            VodConfigurationPage.save();
+                            VodConfigurationPage.populatePlaylists(page);
+                        }
+                    });
+                },
+                triggerSync: function () {
+
+	                ApiClient.getScheduledTasks().then(function(response) {
+
+		                var taskId = null;
+
+		                for (var i = 0; i < response.length; i++) {
+							if (response[i].Key == 'VodPlaylistLibrarySync') {
+								taskId = response[i].Id;
+								break;
+							}
+						}
+
+						if (taskId != null) {
+							console.log('Starting task id ' + taskId);
+							ApiClient.startScheduledTask(taskId);
+						}
+
+	                });
+
+                },
+                addPlaylistPopup: function (page) {
+                	$('#name', page).val("").focus();
+                	//$('#streamPopup', page).popup('open');
+                	$('#name', page).focus();
+                },
+
+                save: function () {
+                    Dashboard.showLoadingMsg();
+
+                    ApiClient.getPluginConfiguration(VodConfigurationPage.pluginUniqueId).then(function (config) {
+	                    config.Playlists = VodConfigurationPage.config.Playlists;
+                    	ApiClient.updatePluginConfiguration(VodConfigurationPage.pluginUniqueId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                    });
+                },
+                addPlayList: {
+                    show: function() {
+
+                    },
+                    hide: function() {
+
+                    }
+                }
+            };
+
+			$('.vodConfigurationPage').on('pageinit', function (event) {
+
+                var page = this;
+
+                page.querySelector('.js-add-playlist').addEventListener('click', function () {
+                	VodConfigurationPage.addPlaylistPopup(page);
+                });
+
+                $('#streamForm', page).on('submit', function (e) {
+
+                    e.preventDefault();
+
+                	//$('#streamPopup', page).popup('close');
+                	var form = this;
+
+                	var newEntry = true;
+                    var name = $('#name', form).val();
+                    var collectionType = $('#collectionType', form).val();
+                    var url = $('#url', form).val();
+                    var createCollection = $('#create_collection', form).val();
+                    var strictSync = $('#strict_sync', form).val();
+                	var userId = Dashboard.getCurrentUserId();
+
+                	if (VodConfigurationPage.config.Playlists.length > 0) {
+
+                		for (var i = 0, length = VodConfigurationPage.config.Playlists.length; i < length; i++) {
+                			if (VodConfigurationPage.config.Playlists[i].Name == name) {
+                				newEntry = false;
+                				VodConfigurationPage.config.Playlists[i].Url = url;
+                				VodConfigurationPage.config.Playlists[i].CollectionType = collectionType;
+                				VodConfigurationPage.config.Playlists[i].UserId = userId;
+                				VodConfigurationPage.config.Playlists[i].CreateLocalCollection = createCollection;
+                				VodConfigurationPage.config.Playlists[i].StrictSync = strictSync;
+			                }
+                		}
+                	}
+
+                    var playlist = {};
+
+                	if (newEntry) {
+                		playlist.Name = name;
+                		playlist.CollectionType = collectionType;
+                		playlist.Url = url;
+                		playlist.UserId = userId;
+                		playlist.CreateLocalCollection = createCollection;
+                		playlist.StrictSync = strictSync;
+
+                		VodConfigurationPage.config.Playlists.push(playlist);
+                    }
+
+                	VodConfigurationPage.save();
+	                VodConfigurationPage.populatePlaylists(page);
+                });
+
+            }).on('pageshow', function (event) {
+
+                Dashboard.showLoadingMsg();
+
+                var page = this;
+
+                ApiClient.getPluginConfiguration(VodConfigurationPage.pluginUniqueId).then(function (config) {
+
+                	VodConfigurationPage.config = config;
+
+	                var allowedCollectionTypes = [
+		                'movies'
+	                ];
+
+	                $.each(allowedCollectionTypes,
+						function () {
+							$('#collectionType').append('<option value="' + this + '">' + this + '</option>');
+						});
+
+                	VodConfigurationPage.populatePlaylists(page);
+
+                    Dashboard.hideLoadingMsg();
+                });
+
+            });
+
+        </script>
+    </div>
+</body>
+</html>
