@@ -7,3 +7,4 @@ E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Project\obj\Debug\Project.csproj.Core
 E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Project\obj\Debug\Project.csproj.CopyComplete
 E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Project\obj\Debug\Pecee.Emby.Plugin.Vod.dll
 E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Project\obj\Debug\Pecee.Emby.Plugin.Vod.pdb
+E:\Visual Studio\VOD\Pecee.Plugin.Emby.Vod\Project\obj\Debug\Project.csprojAssemblyReference.cache
