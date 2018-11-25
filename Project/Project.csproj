@@ -117,7 +117,6 @@
     <Content Include="Parser\obj\Debug\Pecee.Plugin.Emby.Vod.pdb" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="obj\" />
     <Folder Include="Parser\Api\" />
     <Folder Include="Parser\Configuration\" />
     <Folder Include="Parser\dashboard-ui\" />

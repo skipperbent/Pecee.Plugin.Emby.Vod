@@ -22,7 +22,7 @@ namespace Pecee.Emby.Plugin.Vod.Models
 
 		//private String _collectionType;
 
-		public override bool IsDisplayedAsFolder => false;
+		public override bool IsDisplayedAsFolder => true;
 
 		public PlaylistConfig Config { get; set; }
 
@@ -66,8 +66,7 @@ namespace Pecee.Emby.Plugin.Vod.Models
 			IdentifierId = Guid.NewGuid();
 			SourceType = SourceType.Library;
 			IsVirtualItem = false;
-
-		    //IsHidden = true;
+		    IsHidden = true;
 		}
 
 		public bool Merge(VodPlaylist remote)

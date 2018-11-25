@@ -53,7 +53,7 @@ namespace Pecee.Emby.Plugin.Vod.Entities
 				PlaylistUrl = this.Url,
 				//CollectionType = playlistConf.CollectionType,
 				IdentifierId = this.IdentifierId,
-				IsHidden = !CreateLocalCollection
+				IsHidden = !CreateLocalCollection,
 			};
 		}
 	}

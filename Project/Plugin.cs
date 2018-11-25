@@ -54,7 +54,7 @@ namespace Pecee.Emby.Plugin.Vod
         {
 
             // Cleanup
-            Logger.Info("Start uninstall cleanup");
+            Logger.Debug("[VOD] Start uninstall cleanup");
 
             var types = new []
             {
@@ -63,7 +63,7 @@ namespace Pecee.Emby.Plugin.Vod
 
             foreach (var playlist in LibraryManager.GetItemList(new InternalItemsQuery(), false).Where(i => types.Contains(i.GetType())).ToList())
             {
-                Logger.Info("Removing VOD playlist: {0}", playlist.Name);
+                Logger.Debug("[VOD] Removing playlist: {0}", playlist.Name);
                 
                 LibraryManager.DeleteItem(playlist, new DeleteOptions()
                 {
@@ -72,7 +72,7 @@ namespace Pecee.Emby.Plugin.Vod
                 }, true);
             }
 
-            Logger.Info("Finished uninstall cleanup");
+            Logger.Debug("[VOD] Finished uninstall cleanup");
 
             base.OnUninstalling();
         }

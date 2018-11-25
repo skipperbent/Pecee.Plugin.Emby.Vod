@@ -23,7 +23,7 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 		private readonly IProviderManager _providerManager;
 		private readonly M3UParser _m3UParser;
 
-		public string Name => "Video on Demand Playlist";
+		public string Name => "Video on Demand Playlist Sync";
 
 		public string Key => "VodPlaylistLibrarySync";
 
@@ -46,27 +46,28 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 
 		public async Task Cleanup(PlaylistConfig[] playlists, CancellationToken cancellationToken)
 		{
-		    _logger.Debug("Cleaning up old and removed items");
+		    _logger.Info("[VOD] Cleaning up old and removed items");
 
 			var deleteItems = _libraryManager.GetUserRootFolder()
 				.RecursiveChildren.OfType<VodPlaylist>()
 				.Where(p => p.Id == Guid.Empty || p.IdentifierId == Guid.Empty || 
-				(playlists.Length > 0 && playlists.FirstOrDefault(p1 => p1.IdentifierId == p.IdentifierId) == null))
+				(playlists.Length > 0 && playlists.FirstOrDefault(p1 => p1.IdentifierId == p.IdentifierId) == null) || 
+				 playlists.Length == 0)
 				.Cast<BaseItem>().ToList();
 
-		    _logger.Info("Found {0} playlists to remove", deleteItems.Count);
+		    _logger.Info("[VOD] Found {0} playlists to remove", deleteItems.Count);
 
 			var mediaItems = _libraryManager.GetUserRootFolder()
 				.RecursiveChildren.OfType<VodMovie>()
-				.Where(p1 => p1.Id == Guid.Empty || p1.IdentifierId == Guid.Empty || playlists.FirstOrDefault(p2 => p2.IdentifierId == p1.ParentId) != null).Cast<BaseItem>().ToList();
+				.Where(p1 => p1.Id == Guid.Empty || p1.IdentifierId == Guid.Empty || playlists.FirstOrDefault(p2 => p2.IdentifierId == p1.ParentId) != null || playlists.Length == 0).Cast<BaseItem>().ToList();
 
 			deleteItems.AddRange(mediaItems);
 
-		    _logger.Info("Found {0} mediaItems to remove", mediaItems.Count);
+		    _logger.Info("[VOD] Found {0} items to remove", mediaItems.Count);
 
 			foreach (BaseItem item in deleteItems)
 			{
-			    _logger.Debug("Removing dead item: {0}, id:  {1}, parentId: {2}", item.Name, item.Id, item.ParentId);
+			    _logger.Debug("[VOD] Removing item: {0}, id:  {1}, parentId: {2}", item.Name, item.Id, item.ParentId);
 			    _libraryManager.DeleteItem(item, new DeleteOptions()
 				{
                     DeleteFileLocation = true
@@ -83,11 +84,11 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 			// No point going further if we don't have users.
 			if (playlists.Length == 0)
 			{
-			    _logger.Info("No internal playlists added");
+			    _logger.Info("[VOD] No internal playlists added");
 				return;
 			}
 
-		    _logger.Info("Library sync started");
+		    _logger.Info("[VOD] Library sync starting");
 
 			var existingPlaylists =
 			    _libraryManager.GetUserRootFolder()
@@ -106,13 +107,13 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 				if (existingPlaylist != null)
 				{
                     // UPDATE
-				    _logger.Debug("{0}: playlist with id {1} and identifier {2} found, updating...", existingPlaylist.Name, existingPlaylist.Id, existingPlaylist.IdentifierId);
+				    _logger.Debug("[VOD] {0}: playlist with id {1} and identifier {2} found, updating...", existingPlaylist.Name, existingPlaylist.Id, existingPlaylist.IdentifierId);
 					existingPlaylist.Merge(existingPlaylist);
 				}
 				else
 				{
                     // CREATE
-				    _logger.Debug("{0}: playlist with identifier {1} not found, creating...", playlist.Name, playlist.IdentifierId);
+				    _logger.Debug("[VOD] {0}: playlist with identifier {1} not found, creating...", playlist.Name, playlist.IdentifierId);
 					playlist.Id = _libraryManager.GetNewItemId(playlist.IdentifierId.ToString(), typeof(VodPlaylist));
 				    _libraryManager.GetUserRootFolder().AddChild(playlist, cancellationToken);
 				}
@@ -133,7 +134,7 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 
 		private async Task SyncMedia(VodPlaylist playlist, IProgress<double> progress, CancellationToken cancellationToken)
 		{
-		    _logger.Info("{0}: parsing remote playlist: {1}", playlist.Name, playlist.PlaylistUrl);
+		    _logger.Info("[VOD] {0}: parsing remote playlist: {1}", playlist.Name, playlist.PlaylistUrl);
 			
 			List<Media> mediaItems = await _m3UParser.GetMediaItems(playlist, cancellationToken);
 
@@ -173,14 +174,14 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 					if (existingMediaItem != null)
 					{
                         // UPDATE
-					    _logger.Debug("{0}: found item with id {1} and identifier {2}, updating...", playlist.Name, existingMediaItem.Id, existingMediaItem.IdentifierId);
+					    _logger.Debug("[VOD] {0}: found item with id {1} and identifier {2}, updating...", playlist.Name, existingMediaItem.Id, existingMediaItem.IdentifierId);
 						await existingMediaItem.Merge(vodItem);
 						await RefreshMetaData(vodItem, cancellationToken).ConfigureAwait(false);
 					}
 					else
 					{
                         // CREATE
-					    _logger.Debug("{0}: media {1} with  identifier {2} not found, adding...", playlist.Name, vodItem.Name, vodItem.IdentifierId);
+					    _logger.Debug("[VOD] {0}: media {1} with  identifier {2} not found, adding...", playlist.Name, vodItem.Name, vodItem.IdentifierId);
 						vodItem.Id = _libraryManager.GetNewItemId(vodItem.IdentifierId.ToString(), typeof(VodMovie));
 						playlist.AddChild(vodItem, cancellationToken);
 
@@ -190,8 +191,9 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 				}
 				catch (Exception e)
 				{
-				    _logger.ErrorException(e.Message, e);
-				}
+				    _logger.ErrorException("[VOD] Error: " + e.Message, e);
+
+                }
 
 				i++;
 			}
@@ -201,7 +203,7 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 
 		private async Task<BaseItem> RefreshMetaData(BaseItem item, CancellationToken cancellationToken)
 		{
-		    _logger.Info("{0}: Refreshing meta-data", item.Name);
+		    _logger.Info("[VOD] {0}: Refreshing meta-data", item.Name);
 
 			// TODO: refresh meta-data for multiple content-types
 
@@ -219,11 +221,11 @@ namespace Pecee.Emby.Plugin.Vod.Scheduler
 
 			if (metaResult == null)
 			{
-			    _logger.Debug("{0}: Meta-data not found", item.Name);
+			    _logger.Debug("[VOD] {0}: Meta-data not found", item.Name);
 				return item;
 			}
 
-		    _logger.Debug("{0}: Found meta-data", item.Name);
+		    _logger.Debug("[VOD] {0}: Found meta-data", item.Name);
 
 			item.Name = metaResult.Name;
 			item.Overview = metaResult.Overview;

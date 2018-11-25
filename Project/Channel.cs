@@ -87,7 +87,7 @@ namespace Pecee.Emby.Plugin.Vod
 		    }
 		    catch (Exception e)
 		    {
-                Plugin.Instance.Logger.ErrorException("VOD: Error getting channel image", e);
+                Plugin.Instance.Logger.ErrorException("[VOD] Error: " + e.Message, e);
 		    }
 
 		    return null;
@@ -107,7 +107,7 @@ namespace Pecee.Emby.Plugin.Vod
 
 		public Task<ChannelItemResult> GetChannelPlaylists(CancellationToken cancellationToken)
 		{
-            Plugin.Instance.Logger.Info("VOD: Get channel playlists");
+            Plugin.Instance.Logger.Debug("[VOD] Get channel playlists");
 		    var items = Plugin.Instance.Configuration.Playlists.Select(p => new ChannelItemInfo()
 		    {
 		        Id = ChannelFolder.GetUrl(ChannelFolderType.Playlist, p.IdentifierId.ToString()),
@@ -118,7 +118,7 @@ namespace Pecee.Emby.Plugin.Vod
 		        Name = p.Name,
             }).OrderBy(i => i.Name).ToList();
 
-            _logger.Info("VOD: found {0} items", items.Count);
+            _logger.Debug("[VOD] found {0} items", items.Count);
 
 			return Task.FromResult(new ChannelItemResult()
 			{
@@ -130,11 +130,11 @@ namespace Pecee.Emby.Plugin.Vod
 		public async Task<ChannelItemResult> GetChannelItems(InternalChannelItemQuery query, CancellationToken cancellationToken)
 		{
 
-		    Plugin.Instance.Logger.Info("VOD: Get channel items");
+		    Plugin.Instance.Logger.Debug("[VOD] Get channel items");
 
 		    if (string.IsNullOrWhiteSpace(query.FolderId))
 		    {
-		        _logger.Info("VOD: Channel items default");
+		        _logger.Debug("[VOD] Channel items default");
 		        return await GetAllMedia(query, cancellationToken).ConfigureAwait(false);
 		        //return await GetChannelPlaylists(cancellationToken).ConfigureAwait(false);
 		    }
@@ -142,20 +142,20 @@ namespace Pecee.Emby.Plugin.Vod
 
 		    var folder = ChannelFolder.Parse(query.FolderId);
 
-            Plugin.Instance.Logger.Debug("VOD: Render channel folder id: {0}", query.FolderId);
+            Plugin.Instance.Logger.Debug("[VOD] Render channel folder id: {0}", query.FolderId);
 
             switch (folder.Type)
 		    {
                 default:
 		        case ChannelFolderType.Playlist:
 		        {
-		            Plugin.Instance.Logger.Info("VOD: Get channel items playlist for id: {0} - {1}", folder.Id, folder.Type.ToString());
+		            Plugin.Instance.Logger.Debug("[VOD] Get channel items playlist for id: {0} - {1}", folder.Id, folder.Type.ToString());
 		            var playlist = _libraryManager.GetUserRootFolder().GetRecursiveChildren().OfType<VodPlaylist>()
 		                .FirstOrDefault(p => p.IdentifierId.ToString() == folder.Id.ToString());
 
 		            if (playlist != null)
 		            {
-		                Plugin.Instance.Logger.Info("VOD: Found channel playlist: {0}", playlist.Name);
+		                Plugin.Instance.Logger.Debug("[VOD] Found channel playlist: {0}", playlist.Name);
                             return await new Task<ChannelItemResult>(() => GetPlaylistItems(playlist), cancellationToken).ConfigureAwait(false);
 		            }
 
@@ -173,7 +173,7 @@ namespace Pecee.Emby.Plugin.Vod
 		public ChannelItemResult GetPlaylistItems(VodPlaylist playlist)
 		{
 
-		    Plugin.Instance.Logger.Info("VOD: Get playlist items");
+		    Plugin.Instance.Logger.Debug("[VOD] Get playlist items");
             var mediaItems = playlist.GetRecursiveChildren().OfType<VodMovie>();
 
 		    var items = (from media in mediaItems
@@ -230,16 +230,10 @@ namespace Pecee.Emby.Plugin.Vod
             return Task.FromResult(result);
         }
 
-        /*public Task LoadRegistrationInfoAsync()
-        {
-            Plugin.Instance.Registration = await PluginSecurityManager.GetRegistrationStatus(PluginConfiguration.Name).ConfigureAwait(false);
-            Plugin.Logger.Debug("PodCasts Registration Status - Registered: {0} In trial: {2} Expiration Date: {1} Is Valid: {3}", Plugin.Instance.Registration.IsRegistered, Plugin.Instance.Registration.ExpirationDate, Plugin.Instance.Registration.TrialVersion, Plugin.Instance.Registration.IsValid);
-        }*/
-
         public Task<IEnumerable<ChannelItemInfo>> Search(ChannelSearchInfo searchInfo, CancellationToken cancellationToken)
 	    {
 
-	        Plugin.Instance.Logger.Info("VOD: Search");
+	        Plugin.Instance.Logger.Debug("[VOD] Search");
 
             return new Task<IEnumerable<ChannelItemInfo>>(delegate 
             {

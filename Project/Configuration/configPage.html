@@ -45,18 +45,18 @@
                                 </label>
                                 <input id="url" type="url" required class="emby-input">
                             </div>
-                            <div class="checkboxContainer">
-                                <label class="inputLabel inputLabel-float inputLabelUnfocused" for="create_collection">
-                                    Create local collection
-                                    <input is="emby-checkbox" id="create_collection" type="checkbox" value="1" class="emby-input">
-                                    <span>Create visible collection outside the channel</span>
-                                </label>
-                                
-                            </div>
+                            <!--<div class="checkboxContainer">
+                            <label class="inputLabel inputLabel-float inputLabelUnfocused" for="create_collection">
+                                Create local collection
+                                <input is="emby-checkbox" id="create_collection" type="checkbox" value="1" class="emby-input">
+                                <span>Create visible collection outside the channel</span>
+                            </label>
+
+                        </div>-->
                             <div class="checkboxContainer">
                                 <label class="inputLabel inputLabel-float inputLabelUnfocused" for="strict_sync">
                                     Strict Sync
-                                    <input is="emby-checkbox" id="strict_sync" type="checkbox" value="1" class="emby-input">
+                                    <input is="emby-checkbox" id="strict_sync" type="checkbox" checked="checked" value="1" class="emby-input">
                                     <span>When items are deleted remotely, local items will also be deleted.</span>
                                 </label>
                             </div>
@@ -123,6 +123,7 @@
                             var page = $(link).parents('.page')[0];
 
                             VodConfigurationPage.save();
+                            VodConfigurationPage.triggerSync();
                             VodConfigurationPage.populatePlaylists(page);
                         }
                     });

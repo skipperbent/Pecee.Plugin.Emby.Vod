@@ -36,11 +36,11 @@ namespace Pecee.Emby.Plugin.Vod.Parser
 			var attributeMatches = _regexPattern.Matches(line);
 			if (attributeMatches.Count == 0)
 			{
-				_logger.Debug("No attributes found", attributeMatches.Count);
+				_logger.Debug("[VOD] No attributes found", attributeMatches.Count);
 				return attributes;
 			}
 
-			_logger.Debug("Found {0} attributes", attributeMatches.Count);
+			_logger.Debug("[VOD] Found {0} attributes", attributeMatches.Count);
 
 			foreach (Match attribute in attributeMatches)
 			{
@@ -57,7 +57,7 @@ namespace Pecee.Emby.Plugin.Vod.Parser
 					continue;
 				}
 
-				_logger.Debug("Key: {0} - Value: {1}", key, value);
+				_logger.Debug("[VOD] Key: {0} - Value: {1}", key, value);
 				attributes.Add(key, value);
 			}
 
@@ -68,7 +68,7 @@ namespace Pecee.Emby.Plugin.Vod.Parser
 		{
 			var items = new List<Media>();
 
-			_logger.Debug("{0}: Starting to parse: {1}", playlist.Name, playlist.PlaylistUrl);
+			_logger.Debug("[VOD] {0}: Starting to parse: {1}", playlist.Name, playlist.PlaylistUrl);
 
 			using (Stream stream = await _httpClient.Get(new HttpRequestOptions()
 			{
@@ -84,11 +84,11 @@ namespace Pecee.Emby.Plugin.Vod.Parser
 
 						if (line.IndexOf("#EXTINF", StringComparison.CurrentCulture) != 0)
 						{
-							_logger.Debug("{0}: Non-valid line, skipping", playlist.Name);
+							_logger.Debug("[VOD] {0}: Non-valid line, skipping", playlist.Name);
 							continue;
 						}
 
-						_logger.Debug("Found line with #EXTINF meta information");
+						_logger.Debug("[VOD] Found line with #EXTINF meta information");
 
 						var attributes = ParseAttributes(line);
 
@@ -103,12 +103,12 @@ namespace Pecee.Emby.Plugin.Vod.Parser
 						// Fetch logo
 						if (attributes.ContainsKey("tvg-logo"))
 						{
-							_logger.Debug("Found tvg-logo: {0}", attributes["tvg-logo"]);
+							_logger.Debug("[VOD] Found tvg-logo: {0}", attributes["tvg-logo"]);
 							Uri.TryCreate(attributes["tvg-logo"], UriKind.Absolute, out imgUri);
 						}
 
 						var imageUrl = (imgUri != null) ? imgUri.ToString() : null;
-						_logger.Debug("Adding: {0}, stream playlistUrl: {0}, image: {0}", attributes["tvg-name"], streamUrl, imageUrl);
+						_logger.Debug("[VOD] Adding: {0}, stream playlistUrl: {0}, image: {0}", attributes["tvg-name"], streamUrl, imageUrl);
 
 						var media = new Media()
 						{
