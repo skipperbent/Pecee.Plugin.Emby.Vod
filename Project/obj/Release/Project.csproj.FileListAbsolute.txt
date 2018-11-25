@@ -1,0 +1,9 @@
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\Project\bin\Release\Pecee.Emby.Plugin.Vod.dll
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\Project\bin\Release\Pecee.Emby.Plugin.Vod.pdb
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\Project\bin\Release\MediaBrowser.Common.dll
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\Project\bin\Release\MediaBrowser.Controller.dll
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\Project\bin\Release\MediaBrowser.Model.dll
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\Project\obj\Release\Project.csproj.CoreCompileInputs.cache
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\Project\obj\Release\Project.csproj.CopyComplete
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\Project\obj\Release\Pecee.Emby.Plugin.Vod.dll
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\Project\obj\Release\Pecee.Emby.Plugin.Vod.pdb

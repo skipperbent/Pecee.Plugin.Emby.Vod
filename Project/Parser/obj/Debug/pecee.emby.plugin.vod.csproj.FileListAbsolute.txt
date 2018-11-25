@@ -1,0 +1,17 @@
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\Pecee.Emby.Plugin.Vod.dll
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\Pecee.Emby.Plugin.Vod.pdb
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Common.dll
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Controller.dll
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Model.dll
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\obj\Debug\Pecee.Emby.Plugin.Vod.dll
+D:\Visual Studio\emby.plugin.vod\MediaBrowser.Plugin.RemoteVideos\obj\Debug\Pecee.Emby.Plugin.Vod.pdb
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\Pecee.Emby.Plugin.Vod.dll
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\Pecee.Emby.Plugin.Vod.pdb
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Common.dll
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Controller.dll
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\MediaBrowser.Plugin.RemoteVideos\bin\Debug\MediaBrowser.Model.dll
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\MediaBrowser.Plugin.RemoteVideos\obj\Debug\Pecee.Emby.Plugin.Vod.csprojAssemblyReference.cache
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\MediaBrowser.Plugin.RemoteVideos\obj\Debug\Pecee.Emby.Plugin.Vod.csproj.CoreCompileInputs.cache
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\MediaBrowser.Plugin.RemoteVideos\obj\Debug\Pecee.Emby.Plugin.Vod.csproj.CopyComplete
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\MediaBrowser.Plugin.RemoteVideos\obj\Debug\Pecee.Emby.Plugin.Vod.dll
+E:\Visual Studio\Pecee.Plugin.Emby.Vod\MediaBrowser.Plugin.RemoteVideos\obj\Debug\Pecee.Emby.Plugin.Vod.pdb
